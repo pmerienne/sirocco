@@ -1,0 +1,19 @@
+# IDE
+.idea
+*.iml
+sirocco-web/.vscode
+
+# Python
+.venv
+.pytest-cache
+poetry.lock
+
+# Web (JS)
+sirocco-web/.nuxt
+sirocco-web/node_modules
+sirocco-web/package-lock.json
+
+# Others
+.env
+.mypy_cache
+.ruff_cache
