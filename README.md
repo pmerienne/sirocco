@@ -11,7 +11,10 @@ Sirocco
   - Bases for GenAI/LLM : OpenAI, MistralAI, Langchain (opt: HuggingFace transformers)
 
 - Explore:
-  - TinyDB, Pinecone  
+  - TinyDB: Simple in-memory/on-file database but not a vector store 
+  - Pinecone: Seems great (not tested) but no local database 
+  - LanceDB: Seems great but smaller community than ChromaDB
+  - ChromaDB:  Great fit ! Easy to use
 
 # Todo
 ## Project setup
@@ -98,6 +101,11 @@ poetry install
 Run linter (ruff)
 ```bash
 ruff check .                        
+```
+
+Run static type checker
+```bash
+mypy .                        
 ```
 
 # Notes on project setup

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -50,11 +49,11 @@ class Document(BaseModel):
 
 
 class Course(BaseModel):
-    id: Optional[int] = None
+    id: str = Field(default_factory=uuid)
     # TODO: document <- Syllabus
-    name: str = "Maîtriser les bases de données NoSQL"
+    name: str
     description: str = ""
-    topics: list[str] = ["Base de données", "NoSQL", "CAP", "MongoDB", "Cassandra", "Redis"]
+    topics: list[str] = Field(default_factory=list)
     # requirements: list[str] = Field(default_factory=list)  # Requirements
     # learning_objectives: list[str] = Field(default_factory=list)  # What you'll learn ?
     # target_audience: str = ""  # Who this course is for?
@@ -62,4 +61,20 @@ class Course(BaseModel):
 
     created_at: datetime = Field(default_factory=datetime.now)
 
+    @property
+    def metadata(self) -> dict:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "topics": ", ".join(self.topics),
+            "created_at": self.created_at.isoformat(),
+            "raw_json": self.model_dump_json()
+        }
 
+    @property
+    def contents(self) -> str:
+        return f"""
+        {self.name}
+        ==
+        {self.description}
+        """

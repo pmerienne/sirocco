@@ -1,46 +1,59 @@
 import os
-from typing import Optional
+from typing import Mapping
 
-from fastapi.encoders import jsonable_encoder
+import chromadb
 from loguru import logger
-from tinydb import TinyDB
 
 from sirocco.model import Course
 
-tiny_db_path = os.getenv('TINY_DB_PATH')
-logger.info(f'Loading TinyDB from {tiny_db_path}')
+db_path = os.getenv('DB_PATH')
+if db_path:
+    logger.info(f'Loading DB from {db_path}')
+    client = chromadb.PersistentClient(path=db_path)
+else:
+    client = chromadb.Client()
 
-db = TinyDB(tiny_db_path)
-courses = db.table('courses')
+courses = client.get_or_create_collection(name="courses")
 
 
-def find_all() -> list[Course]:
+def find_all(limit: int = 10) -> list[Course]:
+    results = courses.peek(limit)
+    metadatas = results.get('metadatas') or []
+
     return [
-        Course(**raw)
-        for raw in courses.all()
+        _load_from_metadata(metadata)
+        for metadata in metadatas
     ]
 
 
-def get_by_id(course_id: int) -> Course:
-    raw = courses.get(doc_id=course_id)
-    if raw is None:
+def _load_from_metadata(metadata: Mapping) -> Course:
+    raw = metadata['raw_json']
+    course = Course.model_validate_json(raw)
+    return course
+
+
+def get_by_id(course_id: str) -> Course:
+    result = courses.get(ids=[course_id])
+
+    metadatas = result['metadatas']
+    if not metadatas:
         raise RuntimeError(f'No course found with id {course_id}')
-    return Course(**raw)  # type: ignore
 
-
-def create(course: Course) -> Course:
-    raw = jsonable_encoder(course)
-    doc_id = courses.insert(raw)
-    course.id = doc_id
-    save(course)  # TODO: I need this in order to properly save the "id" field !
+    course = _load_from_metadata(metadatas[0])
     return course
 
 
 def save(course: Course) -> Course:
-    raw: dict = jsonable_encoder(course)
-    courses.update(raw, doc_ids=[course.id])  # type: ignore
+    courses.upsert(
+        ids=[course.id],
+        documents=[course.contents],
+        metadatas=[course.metadata]
+    )
+
     return course
 
 
-def truncate():
-    courses.truncate()
+def delete_all():
+    global courses
+    client.reset()
+    courses = client.get_or_create_collection(name="courses")

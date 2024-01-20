@@ -6,6 +6,7 @@ sirocco-web/.vscode
 # Python
 .venv
 .pytest-cache
+__pycache__/
 poetry.lock
 
 # Web (JS)

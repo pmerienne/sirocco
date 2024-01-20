@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sirocco import repo
 from sirocco.gen_ai import generator
 from sirocco.model import Course, Document
-from sirocco.utils.common import require
 
 api = FastAPI()
 api.add_middleware(
@@ -20,8 +19,8 @@ api.add_middleware(
 
 @api.post("/courses/")
 async def create() -> Course:
-    course = Course()
-    repo.create(course)
+    course = Course(name='New fantastic course')
+    repo.save(course)
     return course
 
 
@@ -32,7 +31,7 @@ async def find_all() -> list[Course]:
 
 
 @api.get("/courses/{course_id}")
-async def get_by_id(course_id: int) -> Course:
+async def get_by_id(course_id: str) -> Course:
     course = repo.get_by_id(course_id)
     if course is None:
         raise HTTPException(status_code=404, detail="Course not found")
@@ -46,7 +45,7 @@ async def update(course_id: str, course: Course) -> Course:
 
 
 @api.put("/courses/{course_id}/info/{field_name}")
-async def update_info(course_id: int, field_name: Literal["name", "description", "topics"]) -> Course:
+async def update_info(course_id: str, field_name: Literal["name", "description", "topics"]) -> Course:
     course = repo.get_by_id(course_id)
 
     info = await generator.generate_info(course, field_name)
@@ -57,7 +56,7 @@ async def update_info(course_id: int, field_name: Literal["name", "description",
 
 
 @api.post("//courses{course_id}/chapters")
-async def create_chapter(course_id: int) -> Course:
+async def create_chapter(course_id: str) -> Course:
     course = repo.get_by_id(course_id)
 
     chapter = Document(title=f"Chapter {len(course.chapters) + 1}")
@@ -68,7 +67,7 @@ async def create_chapter(course_id: int) -> Course:
 
 
 @api.put("/courses/{course_id}/chapters")
-async def generate_chapters(course_id: int) -> Course:
+async def generate_chapters(course_id: str) -> Course:
     course = repo.get_by_id(course_id)
 
     titles = await generator.generate_chapters_titles(course)
@@ -81,7 +80,7 @@ async def generate_chapters(course_id: int) -> Course:
 
 
 @api.put("/courses/{course_id}/chapters/{chapter_index}")
-async def regenerate_chapter(course_id: int, chapter_index: int) -> Course:
+async def regenerate_chapter(course_id: str, chapter_index: int) -> Course:
     course = repo.get_by_id(course_id)
 
     title = await generator.regenerate_chapter(course, chapter_index)
@@ -93,7 +92,7 @@ async def regenerate_chapter(course_id: int, chapter_index: int) -> Course:
 
 
 @api.put("/courses/{course_id}/chapters/{chapter_index}/structure")
-async def generate_chapter_structure(course_id: int, chapter_index: int) -> Course:
+async def generate_chapter_structure(course_id: str, chapter_index: int) -> Course:
     course = repo.get_by_id(course_id)
     chapter = course.chapters[chapter_index]
 
@@ -107,7 +106,7 @@ async def generate_chapter_structure(course_id: int, chapter_index: int) -> Cour
 
 
 @api.put("/courses/{course_id}/chapters/{chapter_index}/paragraph/{header_index}")
-async def generate_chapter_paragraph(course_id: int, chapter_index: int, header_index: int) -> Course:
+async def generate_chapter_paragraph(course_id: str, chapter_index: int, header_index: int) -> Course:
     course = repo.get_by_id(course_id)
     chapter = course.chapters[chapter_index]
 

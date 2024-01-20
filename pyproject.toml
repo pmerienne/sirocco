@@ -10,7 +10,6 @@ python = "^3.10"
 fastapi = "^0.109.0"
 openai = "1.8.0"
 pydantic = "^2.5.2"
-tinydb = "^4.8.0"
 bs4 = "^0.0.1"
 html2text = "^2020.1.16"
 duckduckgo-search = "^4.2"
@@ -18,6 +17,7 @@ loguru = "^0.7.2"
 python-dotenv = "^1.0.0"
 aiohttp = "^3.9.1"
 tiktoken = "^0.5.2"
+chromadb = "^0.4.22"
 
 
 [tool.poetry.group.test.dependencies]
